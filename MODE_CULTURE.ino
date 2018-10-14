@@ -135,20 +135,20 @@ void loop()
      }
      delay(10);
         lcd.setCursor(0,3);
-    if (heure < 10)
-    {
+     if (heure < 10)
+     {
       lcd.print("0");
-    } 
-    lcd.print(RTC.get(DS1307_HR,true)); 
-    lcd.print("H");
-    if (minut < 10)
-    {
+     } 
+     lcd.print(RTC.get(DS1307_HR,true)); 
+     lcd.print("H");
+     if (minut < 10)
+     {
       lcd.print("0");
-    }
-    lcd.print(RTC.get(DS1307_MIN,false));
-    lcd.print(" ");
-    }
- }
+     }
+     lcd.print(RTC.get(DS1307_MIN,false));
+     lcd.print(" ");
+     }
+   
   else if (selectedMode == 2)
   {
     chauffage_on = 18;
@@ -195,7 +195,6 @@ void loop()
     }
     lcd.print(RTC.get(DS1307_MIN,false));
     lcd.print(" ");
-    }
   }
   else 
   {
@@ -221,10 +220,10 @@ void loop()
     lcd.print(h); 
     lcd.print(" %");
     lcd.setCursor(7,3);
-     if(digitalRead(lampe) == HIGH || 
-     {
+     if(digitalRead(lampe) == HIGH) 
+    {
      lcd.print("LAMPE ALLUMEE");
-     }
+      }
      else
      {
      lcd.print("LAMPE ETEINTE");
@@ -244,8 +243,6 @@ void loop()
     lcd.print(RTC.get(DS1307_MIN,false));
     lcd.print(" ");
     }
-  }
-  
 
   if (!(isnan(t) || isnan(h)))// Si l'arduino renvoit e la merde en sortie
   {
@@ -355,7 +352,6 @@ void loop()
 
   delay(1000);
 }
-
 
 
 
