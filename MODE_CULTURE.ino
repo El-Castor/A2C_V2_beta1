@@ -5,6 +5,7 @@
 #include <DS1307.h>//Inclusion librarie DS1307 (Horloge)
 #include <Time.h>//Inclusion librarie Time
 #include <DHT.h>
+#include <LiquidCrystal.h>
 
 #define DHTPIN A0 // pin du DHT
 #define DHTTYPE DHT22 // type de dht
@@ -23,6 +24,8 @@ int hydro = 11; //Humidificateur introduit en pin 11 (numérique)
 int brasseur = 10; //Ventillo brasseur introduit en pin 10 (numérique)
 int lampe = 9; //Lampe introduit en pin 9 (numérique)
 int chauffage = 8; //Chauffage introduit en pin 8 (numérique)
+
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
 char val;
 
@@ -55,6 +58,7 @@ void setup()  //Fonction d'initialisation de la carte
 
   //initialize serial communications at a 9600 baud rate
   Serial.begin(9600);
+  lcd.begin(20,4); //initialisation du lcd de verif fonctionnement automate sans interface
 }
 
 //Nouvelles fonctions qui s'affiche "choix des modes de cultures"***********************************************************************************
@@ -109,7 +113,42 @@ void loop()
     intracteur_off = 27;
     lampe_on = 530;
     lampe_off = 2330;
-  }
+    
+    lcd.setCursor(0,0);
+    lcd.print("  MODE  1  ");
+    lcd.setCursor(0,1);
+    lcd.print("TEMPERATURE ");
+    lcd.print(t); 
+    lcd.print(" C");
+    lcd.setCursor(0,2);
+    lcd.print("HYDROMETRIE ");
+    lcd.print(h); 
+    lcd.print(" %");
+    lcd.setCursor(7,3);
+     if(digitalRead(lampe) == HIGH)
+     {
+     lcd.print("LAMPE ALLUMEE");
+     }
+     else
+     {
+     lcd.print("LAMPE ETEINTE");
+     }
+     delay(10);
+        lcd.setCursor(0,3);
+    if (heure < 10)
+    {
+      lcd.print("0");
+    } 
+    lcd.print(RTC.get(DS1307_HR,true)); 
+    lcd.print("H");
+    if (minut < 10)
+    {
+      lcd.print("0");
+    }
+    lcd.print(RTC.get(DS1307_MIN,false));
+    lcd.print(" ");
+    }
+ }
   else if (selectedMode == 2)
   {
     chauffage_on = 18;
@@ -122,6 +161,41 @@ void loop()
     intracteur_off = 27;
     lampe_on = 659;
     lampe_off = 1900;
+
+    lcd.setCursor(0,0);
+    lcd.print("  MODE  2  ");
+    lcd.setCursor(0,1);
+    lcd.print("TEMPERATURE ");
+    lcd.print(t); 
+    lcd.print(" C");
+    lcd.setCursor(0,2);
+    lcd.print("HYDROMETRIE ");
+    lcd.print(h); 
+    lcd.print(" %");
+    lcd.setCursor(7,3);
+     if(digitalRead(lampe) == HIGH)
+     {
+     lcd.print("LAMPE ALLUMEE");
+     }
+     else
+     {
+     lcd.print("LAMPE ETEINTE");
+     }
+     delay(10);
+        lcd.setCursor(0,3);
+    if (heure < 10)
+    {
+      lcd.print("0");
+    } 
+    lcd.print(RTC.get(DS1307_HR,true)); 
+    lcd.print("H");
+    if (minut < 10)
+    {
+      lcd.print("0");
+    }
+    lcd.print(RTC.get(DS1307_MIN,false));
+    lcd.print(" ");
+    }
   }
   else 
   {
@@ -135,7 +209,43 @@ void loop()
     intracteur_off = 27;
     lampe_on = 659;
     lampe_off = 2000;
+
+    lcd.setCursor(0,0);
+    lcd.print("  MODE  3  ");
+    lcd.setCursor(0,1);
+    lcd.print("TEMPERATURE ");
+    lcd.print(t); 
+    lcd.print(" C");
+    lcd.setCursor(0,2);
+    lcd.print("HYDROMETRIE ");
+    lcd.print(h); 
+    lcd.print(" %");
+    lcd.setCursor(7,3);
+     if(digitalRead(lampe) == HIGH || 
+     {
+     lcd.print("LAMPE ALLUMEE");
+     }
+     else
+     {
+     lcd.print("LAMPE ETEINTE");
+     }
+     delay(10);
+        lcd.setCursor(0,3);
+    if (heure < 10)
+    {
+      lcd.print("0");
+    } 
+    lcd.print(RTC.get(DS1307_HR,true)); 
+    lcd.print("H");
+    if (minut < 10)
+    {
+      lcd.print("0");
+    }
+    lcd.print(RTC.get(DS1307_MIN,false));
+    lcd.print(" ");
+    }
   }
+  
 
   if (!(isnan(t) || isnan(h)))// Si l'arduino renvoit e la merde en sortie
   {
