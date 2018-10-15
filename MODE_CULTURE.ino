@@ -85,6 +85,10 @@ void loop()
   int lampe_on;
   int lampe_off;
 
+  int extracteurStateON = digitalRead(extracteur_on);
+  int extracteurStateOFF = digitalRead(extracteur_off);
+  
+
   //Introduction du programme Croissance si bouton 1 subit une pression
   digitalWrite(brasseur, HIGH); //Ecriture en sortie (broche12) en état BAS
 
@@ -145,10 +149,81 @@ void loop()
      {
       lcd.print("0");
      }
+     {
      lcd.print(RTC.get(DS1307_MIN,false));
      lcd.print(" ");
      }
+
+   delay(3000);
+   lcd.clear();
    
+      for (int i=0;i<10;i++)//lcd page 2
+        //Début sketch affichage LCD de l'état des périphérique externes
+
+     
+      lcd.setCursor(0,0);
+     lcd.print("INTRA  ");
+     lcd.setCursor(7,0);
+       if(digitalRead(extracteur) == HIGH)
+       {
+       lcd.print("ON ");
+       }
+       else
+       {
+       lcd.print("OFF");
+       }
+       
+       lcd.setCursor(0,1);
+      lcd.print("EXTRA  ");
+      lcd.setCursor(7,1);
+        if(digitalRead(intracteur) == HIGH)
+        {
+        lcd.print("ON ");
+        }
+        else
+        {
+        lcd.print("OFF");
+        }
+        
+        lcd.setCursor(0,2);
+      lcd.print("CHAUFFAGE ");
+      lcd.setCursor(10,2);
+       if(digitalRead(chauffage) == HIGH)
+       {
+       lcd.print("ON ");
+       }
+       else
+       {
+       lcd.print("OFF");
+       }
+       
+       lcd.setCursor(0,3);
+      lcd.print("HYDRO ");
+      lcd.setCursor(6,3);
+       if(digitalRead(hydro) == HIGH)
+       {
+       lcd.print("ON ");
+       }
+       else
+       {
+       lcd.print("OFF");
+       }
+       lcd.setCursor(11,3);
+      lcd.print("BRA ");
+      lcd.setCursor(15,3);
+       if(digitalRead(brasseur) == HIGH)
+       {
+       lcd.print("ON ");
+       }
+       else
+       {
+       lcd.print("OFF");
+       }
+        
+  delay(4000);
+  //lcd.clear();
+  }    
+      
   else if (selectedMode == 2)
   {
     chauffage_on = 18;
@@ -302,7 +377,7 @@ void loop()
        digitalWrite(lampe, LOW);
     }
   }
-  
+
   //Début du sample du pH metre
   for(int i=0;i<10;i++)       //Get 10 sample value from the sensor for smooth the value
   { 
@@ -321,6 +396,7 @@ void loop()
       }
     }
   }
+  
   avgValue=0;
   for(int i=2;i<8;i++)                      //take the average value of 6 center sample
     avgValue+=buf[i];
@@ -341,23 +417,21 @@ void loop()
   }
   // If arduino doesn't read correctly the sensors
   else if (!(isnan(t) || isnan(h) || isnan(phValue)))
-  {
+  { //Debogage des different pin (affiche leurs etats en temps réel sur le moniteur série)
     Serial.print(t);
     Serial.print(",");
     Serial.print(h);
     Serial.print(",");
     Serial.print(phValue);
+    Serial.print(",");
+    Serial.println(digitalRead(extracteur));
+    Serial.println(digitalRead(lampe));
+    Serial.println(digitalRead(intracteur));
+    Serial.print(digitalRead(brasseur));
     Serial.println();
   }
-
+ {
   delay(1000);
+
+  }
 }
-
-
-
-
-
-
-
-
-
