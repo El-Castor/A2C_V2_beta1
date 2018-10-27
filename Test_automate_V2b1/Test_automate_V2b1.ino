@@ -12,7 +12,7 @@
 #define DHTPIN A0 // pin du DHT
 #define DHTTYPE DHT22 // type de dht
 #define EC_PIN A8
-float voltage,ecValue,temperature = 25;
+float voltage,voltageBeforeTreatment,ecValue,temperature = 25;
 DFRobot_EC ec;
 
 #define PHPIN 7          
@@ -418,7 +418,12 @@ void loop()
     if(millis()-timepoint>1000U)  //time interval: 1s
     {
       timepoint = millis();
+      voltageBeforeTreatment = analogRead(EC_PIN);
+      Serial.print("VoltageBeforeTreatment=");
+      Serial.print(voltageBeforeTreatment);
       voltage = analogRead(EC_PIN)/1024.0*5000;  // read the voltage
+      Serial.print("voltageEcmeter");
+      Serial.print(voltage);
       temperature = dht.readTemperature();  // read your temperature sensor to execute temperature compensation
       ecValue =  ec.readEC(voltage,temperature);  // convert voltage to EC with temperature compensation
       Serial.print("temperature:");
@@ -451,6 +456,8 @@ void loop()
     Serial.print("^C  EC:");
     Serial.print(ecValue,2);
     Serial.println("ms/cm");
+    Serial.print("voltageEcmeter:");
+    Serial.println(analogRead(voltage));
     Serial.println(digitalRead(extracteur));
     Serial.println(digitalRead(lampe));
     Serial.println(digitalRead(intracteur));
