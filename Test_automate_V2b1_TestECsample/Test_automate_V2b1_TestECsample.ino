@@ -572,38 +572,6 @@ float TempProcess(bool ch)
   delay(1000);
 
   }
-  //fin du sample de l'Ec metre
 
-  // If data is available to read,
-  if (Serial.available() > 0) 
-  { 
-    val = Serial.read(); // read it and store it in val
-    selectedMode = val;
-  }
-  // If arduino doesn't read correctly the sensors
-  else if (!(isnan(t) || isnan(h) || isnan(phValue)))
-  { //Debogage des different pin (affiche leurs etats en temps réel sur le moniteur série)
-    Serial.print(t);
-    Serial.print(",");
-    Serial.print(h);
-    Serial.print(",");
-    Serial.print(phValue);
-    Serial.print(",");
-    Serial.print("température:");
-    Serial.print(temperature,1);
-    Serial.print("^C  EC:");
-    Serial.print(ECcurrent,2);
-    Serial.println("ms/cm");
-    Serial.println(digitalRead(extracteur));
-    Serial.println(digitalRead(lampe));
-    Serial.println(digitalRead(intracteur));
-    Serial.print(digitalRead(brasseur));
-    Serial.println();
-  }
- {
-  delay(1000);
-
-  }
-  }
  
   
