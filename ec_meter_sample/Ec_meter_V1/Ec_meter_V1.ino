@@ -17,12 +17,12 @@
 
 #include <OneWire.h>
 
-#define StartConvert 8
-#define ReadTemperature 22
+#define StartConvert 0
+#define ReadTemperature 1
 
 const byte numReadings = 20;     //the number of sample times
 byte ECsensorPin = A8;  //EC Meter analog output,pin on analog 8
-byte DS18B20_Pin = 22; //DS18B20 signal, pin on digital 22
+byte DS18B20_Pin = 53; //DS18B20 signal, pin on digital 22
 unsigned int AnalogSampleInterval=25,printInterval=700,tempSampleInterval=850;  //analog sample interval;serial print interval;temperature sample interval
 unsigned int readings[numReadings];      // the readings from the analog input
 byte index = 0;                  // the index of the current reading
@@ -36,7 +36,7 @@ OneWire ds(DS18B20_Pin);  // on digital pin 2
 
 void setup() {
  // initialize serial communication with computer:
-  Serial.begin(9600);
+  Serial.begin(115200);
   // initialize all the readings to 0:
   for (byte thisReading = 0; thisReading < numReadings; thisReading++)
     readings[thisReading] = 0;
@@ -76,6 +76,9 @@ void loop() {
   {
     tempSampleTime=millis();
     temperature = TempProcess(ReadTemperature);  // read the current temperature from the  DS18B20
+    //temperature = ReadTemperature;
+    //Serial.print(digitalRead(2));
+    //Serial.print(ReadTemperature);
     TempProcess(StartConvert);                   //after the reading,start the convert for next reading
   }
    /*
