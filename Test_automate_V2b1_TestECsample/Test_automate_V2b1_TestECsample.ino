@@ -5,19 +5,19 @@
 #include <DS1307.h>//Inclusion librarie DS1307 (Horloge)
 #include <Time.h>//Inclusion librarie Time
 #include <DHT.h>
-#include <OneWire.h>
 #include <LiquidCrystal.h>
 #include "DFRobot_EC.h"
 #include <EEPROM.h>
+#include <OneWire.h>
 
 #define DHTPIN A0 // pin du DHT
 #define DHTTYPE DHT22 // type de dht
-
-#define ECsensorPin A8 // pin EC metre
+//#define EC_PIN A8
+//float voltage,voltageBeforeTreatment,ecValue,temperature = 25;
+//DFRobot_EC ec;
 
 #define PHPIN 7          
 DHT dht(DHTPIN, DHTTYPE); // test du fonctionnement
-
 #define StartConvert 0
 #define ReadTemperature 1
 
@@ -33,8 +33,8 @@ int lampe = 9; //Lampe introduit en pin 9 (numérique)
 int chauffage = 8; //Chauffage introduit en pin 8 (numérique)
 
 const byte numReadings = 20;     //the number of sample times
-byte ECsensorPin = A8;  //EC Meter analog output,pin on analog 1
-byte DS18B20_Pin = 43; //DS18B20 signal, pin on digital 2
+byte ECsensorPin = A1;  //EC Meter analog output,pin on analog 1
+byte DS18B20_Pin = 2; //DS18B20 signal, pin on digital 2
 unsigned int AnalogSampleInterval=25,printInterval=700,tempSampleInterval=850;  //analog sample interval;serial print interval;temperature sample interval
 unsigned int readings[numReadings];      // the readings from the analog input
 byte index = 0;                  // the index of the current reading
@@ -43,10 +43,9 @@ unsigned int AnalogAverage = 0,averageVoltage=0;                // the average
 unsigned long AnalogSampleTime,printTime,tempSampleTime;
 float temperature,ECcurrent; 
 
-//Temperature chip i/o
-OneWire ds(DS18B20_Pin);  // on digital pin 43
-
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+//Temperature chip i/o
+OneWire ds(DS18B20_Pin);  // on digital pin 2
 
 char val;
 
@@ -77,20 +76,23 @@ void setup()  //Fonction d'initialisation de la carte
   digitalWrite(extracteur, LOW);  //écriture en sortie (broche 13) d'un état BAS
   digitalWrite(intracteur, LOW); //écriture en sortie (broche 12) d'un état BAS
 
+  // initialize all the readings to 0:
   for (byte thisReading = 0; thisReading < numReadings; thisReading++)
     readings[thisReading] = 0;
-    TempProcess(StartConvert);   //let the DS18B20 start the convert
-    AnalogSampleTime=millis();
-    printTime=millis();
-    tempSampleTime=millis();
- 
+  TempProcess(StartConvert);   //let the DS18B20 start the convert
+  AnalogSampleTime=millis();
+  printTime=millis();
+  tempSampleTime=millis();
+
   //initialize serial communications at a 9600 baud rate
   Serial.begin(9600);
   lcd.begin(20,4); //initialisation du lcd de verif fonctionnement automate sans interface
+  //ec.begin();
 }
 
 //Nouvelles fonctions qui s'affiche "choix des modes de cultures"***********************************************************************************
-void loop() {  
+void loop() 
+{  
   int selectedMode = 1; // Mode selectionné. 1 = Croissance, 2 = Floraison, 3 = Fin de floraison
 
   int minut;       // Introduction Minutes
@@ -436,7 +438,7 @@ void loop() {
   //Fin du sample du pH metre
 
   //Début du sample de l'Ec metre
-  /*
+ /*
    Every once in a while,sample the analog value and calculate the average.
   */
   if(millis()-AnalogSampleTime>=AnalogSampleInterval)  
@@ -497,6 +499,64 @@ void loop() {
       Serial.println("ms/cm");
     }
   }
+  /* //Début du sample de l'Ec metre v2 
+  static unsigned long timepoint = millis();
+    if(millis()-timepoint>1000U)  //time interval: 1s
+    {
+      timepoint = millis();
+      voltageBeforeTreatment = analogRead(EC_PIN);
+      Serial.print("VoltageBeforeTreatment=");
+      Serial.print(voltageBeforeTreatment);
+      voltage = analogRead(EC_PIN)/1024.0*5000;  // read the voltage
+      Serial.print("voltageEcmeter");
+      Serial.print(voltage);
+      temperature = dht.readTemperature();  // read your temperature sensor to execute temperature compensation
+      ecValue =  ec.readEC(voltage,temperature);  // convert voltage to EC with temperature compensation
+      Serial.print("temperature:");
+      Serial.print(temperature,1);
+      Serial.print("^C  EC:");
+      Serial.print(ecValue,2);
+      Serial.println("ms/cm");
+    }
+    ec.calibration(voltage,temperature);  // calibration process by Serail CMD
+    //fin du sample de l'Ec metre
+*/
+//fin du sample de l'Ec metre
+
+  // If data is available to read,
+  if (Serial.available() > 0) 
+  { 
+    val = Serial.read(); // read it and store it in val
+
+    selectedMode = val;
+  }
+  // If arduino doesn't read correctly the sensors
+  else if (!(isnan(t) || isnan(h) || isnan(phValue)))
+  { //Debogage des different pin (affiche leurs etats en temps réel sur le moniteur série)
+    Serial.print(t);
+    Serial.print(",");
+    Serial.print(h);
+    Serial.print(",");
+    Serial.print(phValue);
+    Serial.print(",");
+    //Serial.print("température:");
+    //Serial.print(temperature,1);
+    //Serial.print("^C  EC:");
+    //Serial.print(ecValue,2);
+    //Serial.println("ms/cm");
+    //Serial.print("voltageEcmeter:");
+    //Serial.println(analogRead(voltage));
+    Serial.println(digitalRead(extracteur));
+    Serial.println(digitalRead(lampe));
+    Serial.println(digitalRead(intracteur));
+    Serial.print(digitalRead(brasseur));
+    Serial.println();
+  }
+ {
+  delay(1000);
+
+  }
+}
 
 /*
 ch=0,let the DS18B20 start the convert;ch=1,MCU read the current temperature from the DS18B20.
@@ -538,40 +598,6 @@ float TempProcess(bool ch)
           float tempRead = ((MSB << 8) | LSB); //using two's compliment
           TemperatureSum = tempRead / 16;
     }
-          return TemperatureSum;
-   }
-   //fin du sample de l'Ec metre
+          return TemperatureSum;  
+}
 
-  // If data is available to read,
-  if (Serial.available() > 0) 
-  { 
-    val = Serial.read(); // read it and store it in val
-    selectedMode = val;
-  }
-  // If arduino doesn't read correctly the sensors
-  else if (!(isnan(t) || isnan(h) || isnan(phValue)))
-  { //Debogage des different pin (affiche leurs etats en temps réel sur le moniteur série)
-    Serial.print(t);
-    Serial.print(",");
-    Serial.print(h);
-    Serial.print(",");
-    Serial.print(phValue);
-    Serial.print(",");
-    Serial.print("température:");
-    Serial.print(temperature,1);
-    Serial.print("^C  EC:");
-    Serial.print(ECcurrent,2);
-    Serial.println("ms/cm");
-    Serial.println(digitalRead(extracteur));
-    Serial.println(digitalRead(lampe));
-    Serial.println(digitalRead(intracteur));
-    Serial.print(digitalRead(brasseur));
-    Serial.println();
-  }
- {
-  delay(1000);
-
-  }
-
- 
-  
