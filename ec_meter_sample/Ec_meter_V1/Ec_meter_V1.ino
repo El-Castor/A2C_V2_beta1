@@ -22,7 +22,7 @@
 
 const byte numReadings = 20;     //the number of sample times
 byte ECsensorPin = A8;  //EC Meter analog output,pin on analog 8
-byte DS18B20_Pin = 53; //DS18B20 signal, pin on digital 22
+byte DS18B20_Pin = 43; //DS18B20 signal, pin on digital 22
 unsigned int AnalogSampleInterval=25,printInterval=700,tempSampleInterval=850;  //analog sample interval;serial print interval;temperature sample interval
 unsigned int readings[numReadings];      // the readings from the analog input
 byte index = 0;                  // the index of the current reading

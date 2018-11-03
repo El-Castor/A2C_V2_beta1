@@ -18,6 +18,7 @@
 
 #define PHPIN 7          
 DHT dht(DHTPIN, DHTTYPE); // test du fonctionnement
+
 #define StartConvert 0
 #define ReadTemperature 1
 
@@ -33,8 +34,8 @@ int lampe = 9; //Lampe introduit en pin 9 (numérique)
 int chauffage = 8; //Chauffage introduit en pin 8 (numérique)
 
 const byte numReadings = 20;     //the number of sample times
-byte ECsensorPin = A1;  //EC Meter analog output,pin on analog 1
-byte DS18B20_Pin = 2; //DS18B20 signal, pin on digital 2
+byte ECsensorPin = A8;  //EC Meter analog output,pin on analog 1
+byte DS18B20_Pin = 43; //DS18B20 signal, pin on digital 2
 unsigned int AnalogSampleInterval=25,printInterval=700,tempSampleInterval=850;  //analog sample interval;serial print interval;temperature sample interval
 unsigned int readings[numReadings];      // the readings from the analog input
 byte index = 0;                  // the index of the current reading
