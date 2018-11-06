@@ -519,13 +519,6 @@ void loop()
     Serial.print(",");
     Serial.print(phValue);
     Serial.print(",");
-    //Serial.print("température:");
-    //Serial.print(temperature,1);
-    //Serial.print("^C  EC:");
-    //Serial.print(ecValue,2);
-    //Serial.println("ms/cm");
-    //Serial.print("voltageEcmeter:");
-    //Serial.println(analogRead(voltage));
     Serial.println(digitalRead(extracteur));
     Serial.println(digitalRead(lampe));
     Serial.println(digitalRead(intracteur));
