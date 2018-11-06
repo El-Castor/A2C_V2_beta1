@@ -492,7 +492,7 @@ void loop()
     else if(CoefficientVolatge>3300)Serial.println("Out of the range!");  //>20ms/cm,out of the range
     else
     { 
-      if(CoefficientVolatge<=448)ECcurrent=6.84*CoefficientVolatge-64.32;   //1ms/cm<EC<=3ms/cm
+      if(CoefficientVolatge<=448)ECcurrent=6.84*CoefficientVolatge-0,7;   //1ms/cm<EC<=3ms/cm 
       else if(CoefficientVolatge<=1457)ECcurrent=6.98*CoefficientVolatge-127;  //3ms/cm<EC<=10ms/cm
       else ECcurrent=5.3*CoefficientVolatge+2278;                           //10ms/cm<EC<20ms/cm
       ECcurrent/=1000;    //convert us/cm to ms/cm
@@ -500,28 +500,7 @@ void loop()
       Serial.println("ms/cm");
     }
   }
-  /* //Début du sample de l'Ec metre v2 
-  static unsigned long timepoint = millis();
-    if(millis()-timepoint>1000U)  //time interval: 1s
-    {
-      timepoint = millis();
-      voltageBeforeTreatment = analogRead(EC_PIN);
-      Serial.print("VoltageBeforeTreatment=");
-      Serial.print(voltageBeforeTreatment);
-      voltage = analogRead(EC_PIN)/1024.0*5000;  // read the voltage
-      Serial.print("voltageEcmeter");
-      Serial.print(voltage);
-      temperature = dht.readTemperature();  // read your temperature sensor to execute temperature compensation
-      ecValue =  ec.readEC(voltage,temperature);  // convert voltage to EC with temperature compensation
-      Serial.print("temperature:");
-      Serial.print(temperature,1);
-      Serial.print("^C  EC:");
-      Serial.print(ecValue,2);
-      Serial.println("ms/cm");
-    }
-    ec.calibration(voltage,temperature);  // calibration process by Serail CMD
-    //fin du sample de l'Ec metre
-*/
+  
 //fin du sample de l'Ec metre
 
   // If data is available to read,
@@ -553,10 +532,10 @@ void loop()
     Serial.print(digitalRead(brasseur));
     Serial.println();
   }
- {
+ /*{
   delay(1000);
 
-  }
+  }*/
 }
 
 /*
