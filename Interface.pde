@@ -53,6 +53,20 @@ boolean sketchFullScreen()
   return true;
 }
 
+//initialisation variable pour le graphique de suivi des constantes
+
+int temperature=25;      //Temperature mesurée par l'Arduino
+int tempmini=34;         //Temperature mini mesurée par l'Arduino
+int tempmax=12;          //Temperature maxi mesurée par l'Arduino
+int j;                   //Indice de travail
+int k;                   //Indice de travail
+int x=0;                 //Abcisse
+int x0=0;                //Abcisse précédente
+int y=0;                 //Ordonnée
+int y0;                  //Ordonnée précédente
+int premier = 0;         // Bypass premiere valeur erronée
+
+
 void setup() 
 {
   size(displayWidth, displayHeight);
