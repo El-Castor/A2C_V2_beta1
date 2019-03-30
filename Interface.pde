@@ -66,7 +66,6 @@ int y=0;                 //Ordonnée
 int y0;                  //Ordonnée précédente
 int premier = 0;         // Bypass premiere valeur erronée
 
-
 void setup() 
 {
   size(displayWidth, displayHeight);
@@ -81,6 +80,42 @@ void setup()
   connectionScreenSetup();
   initConstantViews();
   initSelectingViews();
+  
+  //affichage des courbes
+ //Tracé des axes
+ fill(0,0,255);
+ stroke(#0650E4);
+ strokeWeight(2);
+  
+ //horizontal
+ line (290,475,960,475);  10, displayHeight / 2 + 8 * yOffset + yOffset / 4
+ triangle(960, 475, 950, 480, 950, 470);
+ text("Température (°C)", 250, 40);
+ 
+ //vertical
+ line (290,475,290,50);
+ triangle(290, 50, 295, 60, 285, 60);
+ text("Temps", 910, 510);
+
+ //Gradations et textes tous les 5 degrés
+ fill(0,0,255);
+ strokeWeight(2);
+ stroke(#0650E4);
+ for (int i = 0; i < 11; i++) {
+     j=i*40;
+     k=i*5;
+     line(285, 475-j, 290,475-j);
+     text(k, 260, 480-j);
+ }
+
+ //Gradations fines des degrés
+ strokeWeight(1);
+ stroke(#0650E4);
+ for (int i = 0; i < 50; i++) {
+          j=i*8;
+          line(285, 475-j, 290,475-j);
+ }
+  
 }
 
 void cameraSetup()
