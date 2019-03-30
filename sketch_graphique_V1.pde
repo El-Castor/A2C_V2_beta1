@@ -1,7 +1,4 @@
-void setup()
-{
-  
-  int yOffset = displayHeight / 18;
+ int yOffset = displayHeight / 18;
   size(displayWidth,displayHeight);
   
   //Affichage case pur les grahiques
@@ -13,15 +10,11 @@ void setup()
  strokeWeight(2);
   
  //horizontal
- line (290,475,960,475);
- triangle(960, 475, 950, 480, 950, 470);
+ line ((displayWidth/2)+10,(displayHeight/2)+6,(displayWidth/2)+10,(displayWidth/2) -10);
+ triangle(((displayWidth/2)+10)-2, (displayHeight/2)+6, (displayWidth/2)+15, (displayHeight/2)-9, (displayWidth/2)+20,(displayHeight/2)+6 );
  text("Température (°C)", 250, 40);
  
  //vertical
- line (290,475,290,50);
+ line ((displayWidth/2)+10,(displayWidth/2)-10,(displayWidth-yOffset)-10,(displayWidth/2)-10);
  triangle(290, 50, 295, 60, 285, 60);
  text("Temps", 910, 510);
-  
-  
-  
-}
