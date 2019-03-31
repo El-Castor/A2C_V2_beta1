@@ -1,4 +1,6 @@
 import controlP5.*;
+import processing.serial.*;
+
 ControlP5 cp5;
 
 //initiatlisations des variables*******************************************************************
@@ -18,6 +20,9 @@ boolean e=false;
 boolean p=false;
 boolean s=false;
 
+int temperature=25;      //Temperature mesurée par l'Arduino
+int tempmini=34;         //Temperature mini mesurée par l'Arduino
+int tempmax=12;          //Temperature maxi mesurée par l'Arduino
 int m;                   //Indice de travail
 int kn;                   //Indice de travail
 int xg=0;                 //Abcisse
@@ -34,11 +39,12 @@ void setup()
   
  
  cp5= new ControlP5(this);
- cp5.addToggle("TempSol").setValue(0).setPosition(800,700).setSize(50,25).setState(false);
- cp5.addToggle("Temp").setValue(0).setPosition(800,700).setSize(50,25).setState(false);
- cp5.addToggle("Hygro").setValue(0).setPosition(800,600).setSize(50,25).setState(false);
- cp5.addToggle("pH").setValue(0).setPosition(800,800).setSize(50,25).setState(false);
- cp5.addToggle("Ec").setValue(0).setPosition(800,900).setSize(50,25).setState(false);
+
+ cp5.addToggle("Temp").setValue(0).setPosition(800,550).setSize(50,25).setState(false);
+ cp5.addToggle("Hygro").setValue(0).setPosition(800,650).setSize(50,25).setState(false);
+ cp5.addToggle("TempSol").setValue(0).setPosition(800,750).setSize(50,25).setState(false);
+ cp5.addToggle("pH").setValue(0).setPosition(800,850).setSize(50,25).setState(false);
+ cp5.addToggle("Ec").setValue(0).setPosition(800,950).setSize(50,25).setState(false);
  
 }
 
@@ -202,7 +208,7 @@ void graphic(String constChoice, int yValue)
  void serialEvent (Serial myPort) {
  
  //Récupération sur le port série de la temperature sous forme de chaine de caractères
- String tempcar = myPort.readStringUntil('\n');
+ String tempcar = ("25\n"); //myPort.readStringUntil('\n');
  if (tempcar != null && premier == 1) {
       tempcar = trim(tempcar); // Suppression des blancs
       int tempInt = int(tempcar);
@@ -229,10 +235,10 @@ void graphic(String constChoice, int yValue)
         noStroke();
         fill(255, 255, 255);
         rect((displayWidth/2)-20,displayHeight/2,((displayWidth/2) - yOffset)+20,((displayHeight/2-yOffset) - yOffset)+20); //Effacement courbe précédente
-        point(x+(((displayWidth/2)+10)-5)+2,((displayWidth/2)-10)-y);
+        point(xg+(((displayWidth/2)+10)-5)+2,((displayWidth/2)-10)-yg);
       }
       else {
-        line(x0+(((displayWidth/2)+10)-5)+2,((displayWidth/2)-10)-y0,x+(((displayWidth/2)+10)-5)+1,((displayWidth/2)-10)-y);
+        line((xg0)+(((displayWidth/2)+10)-5)+2,((displayWidth/2)-10)-yg0,x+(((displayWidth/2)+10)-5)+1,((displayWidth/2)-10)-yg);
       }
  
  }
