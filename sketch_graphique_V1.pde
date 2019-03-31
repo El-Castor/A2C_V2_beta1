@@ -1,6 +1,10 @@
 import controlP5.*;
 ControlP5 cp5;
 
+//initiatlisations des variables*******************************************************************
+Serial myPort;  //Déclaration port série pour la lecture des données envoyées par l'Arduino
+int mesure;      //Mesure lue sur le port 
+
 int x = displayWidth/2;
 int y = displayHeight/2;
 int j,k;
@@ -12,6 +16,16 @@ boolean t=false;
 boolean hy=false;
 boolean e=false;
 boolean p=false;
+boolean s=false;
+
+int m;                   //Indice de travail
+int kn;                   //Indice de travail
+int xg=0;                 //Abcisse
+int xg0=0;                //Abcisse précédente
+int yg=0;                 //Ordonnée
+int yg0;                  //Ordonnée précédente
+
+int premier = 0;         // Bypass premiere valeur erronée
 
 void setup()
 {
@@ -20,6 +34,7 @@ void setup()
   
  
  cp5= new ControlP5(this);
+ cp5.addToggle("TempSol").setValue(0).setPosition(800,700).setSize(50,25).setState(false);
  cp5.addToggle("Temp").setValue(0).setPosition(800,700).setSize(50,25).setState(false);
  cp5.addToggle("Hygro").setValue(0).setPosition(800,600).setSize(50,25).setState(false);
  cp5.addToggle("pH").setValue(0).setPosition(800,800).setSize(50,25).setState(false);
@@ -40,6 +55,9 @@ void draw()
   }
   if(p){
     graphic("pH", 14);
+  }
+  if(s){
+    graphic("Température solution, °C", 5);
   }
 }
 /*
@@ -103,6 +121,15 @@ public void pH(){
   }
 }
 
+public void TempSol(){
+  println("Température solution selectionné");
+  if(!s){
+    s=true;
+  }else{
+    s=false;
+  }
+}
+
 /*String constSelectPrint 
 
 public void pH(String constSelectPrint,boolean constSelect){
@@ -120,7 +147,7 @@ void graphic(String constChoice, int yValue)
   int y = displayHeight/2;
   int j,k;
   int yOffset = displayHeight / 18;
-  //Affichage case pur les grahiques
+  //Affichage case pour les grahiques
   fill(255, 255, 255);
   rect((displayWidth/2)-20,displayHeight/2,((displayWidth/2) - yOffset)+20,((displayHeight/2-yOffset) - yOffset)+20);
   
@@ -166,4 +193,48 @@ void graphic(String constChoice, int yValue)
           line(((displayWidth/2)+10)+j, (displayWidth/2)-3, ((displayWidth/2)+10)+j,((displayWidth/2)-8));
           text(i, ((displayWidth/2)+7)+j, ((displayWidth/2)+10));
  }
+}
+
+
+//Recuperation des données envoyé par le arduino/******************************************************************************
+
+//Traitements à réception d'une fin de ligne
+ void serialEvent (Serial myPort) {
+ 
+ //Récupération sur le port série de la temperature sous forme de chaine de caractères
+ String tempcar = myPort.readStringUntil('\n');
+ if (tempcar != null && premier == 1) {
+      tempcar = trim(tempcar); // Suppression des blancs
+      int tempInt = int(tempcar);
+      float temperature = float (tempcar);
+  //    float temperature = tempInt;
+      println ("La temperature est de : " + temperature + " : " + tempInt);
+      
+ //Dessin graphe avec temperature actuelle -----------------------
+      stroke (0,255,0);
+      strokeWeight(1);
+  
+      //dessin du nouveau point sur la courbe
+      xg0=x; // Mémorisation abscisse point précédent
+      xg=xg+5; // L'Arduino envoie une nouvelle mesure de température toutes les 5 secondes
+      if (xg >600) {xg=5;}
+    
+      yg0=yg; // Mémorisation ordonnée point précédent
+      yg = tempInt*8; // Un degré correpond à 8 points sur les ordonnées
+    
+      if (yg > tempmax*8)  {tempmax = yg/8;} //Mise à jour temp max
+      if (yg < tempmini*8) {tempmini = yg/8;} //Mise à jour temp min
+    
+      if (xg == 5) {   //Si on rédémarre une nouvelle courbe
+        noStroke();
+        fill(255, 255, 255);
+        rect((displayWidth/2)-20,displayHeight/2,((displayWidth/2) - yOffset)+20,((displayHeight/2-yOffset) - yOffset)+20); //Effacement courbe précédente
+        point(x+(((displayWidth/2)+10)-5)+2,((displayWidth/2)-10)-y);
+      }
+      else {
+        line(x0+(((displayWidth/2)+10)-5)+2,((displayWidth/2)-10)-y0,x+(((displayWidth/2)+10)-5)+1,((displayWidth/2)-10)-y);
+      }
+ 
+ }
+premier = 1;
 }
