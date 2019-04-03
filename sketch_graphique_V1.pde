@@ -106,6 +106,8 @@ void controlEvent(ControlEvent theEvent) {
        }
      }
    }
+ }
+}
 
 
 public void Temp(){
@@ -139,7 +141,6 @@ public void TempSol(){
 }
 
 /*String constSelectPrint 
-
 public void pH(String constSelectPrint,boolean constSelect){
   println(constSelectPrint);
   if(!constSelect){
@@ -156,6 +157,11 @@ void graphic(String constChoice, int yValue)
   int y = displayHeight/2;
   int j,k;
   int yOffset = displayHeight / 18;
+  int idealWidth = width;
+  int idealHeight = height;
+  int xCal = displayWidth / idealWidth;
+  int yCal = displayHeight / idealHeight;
+  
   //Affichage case pour les grahiques
   fill(255, 255, 255);
   rect((displayWidth/2)-20,displayHeight/2,((displayWidth/2) - yOffset)+20,((displayHeight/2-yOffset) - yOffset)+20);
@@ -167,14 +173,14 @@ void graphic(String constChoice, int yValue)
   strokeWeight(2);
   
   //horizontal
-  line ((displayWidth/2)+10*displayWidth/1080,(displayHeight/2)+6,(displayWidth/2)+10,(displayWidth/2) -10);
-  triangle(((displayWidth/2)+5), (displayHeight/2)+10, (displayWidth/2)+10, (displayHeight/2)+2, (displayWidth/2)+15,(displayHeight/2)+10 );
-  text(constChoice, (displayWidth/2)+15,(displayHeight/2)+12);
+  line ((displayWidth/2)+10*xCal,(displayHeight/2)+6*yCal,(displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal);
+  triangle(((displayWidth/2)+5*xCal), (displayHeight/2)+10*yCal, (displayWidth/2)+10*xCal, (displayHeight/2)+2*yCal, (displayWidth/2)+15*xCal,(displayHeight/2)+10*yCal);
+  text(constChoice, (displayWidth/2)+15*xCal,(displayHeight/2)+12*yCal);
  
   //vertical
-  line ((displayWidth/2)+10,(displayWidth/2)-10,(displayWidth-yOffset)-10,(displayWidth/2)-10);
-  triangle(((displayWidth/2)+(displayWidth/2-yOffset))-15,(displayWidth/2)-15, ((displayWidth/2)+(displayWidth/2-yOffset))-15,(displayWidth/2) -6, (displayWidth-yOffset)-5, (displayWidth/2)-10);
-  text("Temps", ((displayWidth/2)+(displayWidth/2-yOffset))-40,(displayWidth/2)-20);
+  line ((displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal,(displayWidth-yOffset)-10*xCal,(displayWidth/2)-10*yCal);
+  triangle(((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-15*yCal, ((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-6*yCal, (displayWidth-yOffset)-5*xCal, (displayWidth/2)-10*yCal);
+  text("Temps", ((displayWidth/2)+(displayWidth/2-yOffset))-40*xCal,(displayWidth/2)-20*yCal);
  
   //Gradations et textes tous les 5 degrés
   fill(0,0,255);
@@ -183,8 +189,8 @@ void graphic(String constChoice, int yValue)
   for (int i = 0; i < 11; i++) {
       j=i*40;
       k=i*yValue;
-      line(((displayWidth/2)+10)-5, (displayWidth/2)-10-j, (displayWidth/2)+10,(displayWidth/2)-10-j);
-      text(k, ((displayWidth/2)+10)-23, (displayWidth/2)-8-j);
+      line(((displayWidth/2)+10)-5*xCal, (displayWidth/2)-10-j*yCal, (displayWidth/2)+10*xCal,(displayWidth/2)-10-j*yCal);
+      text(k, ((displayWidth/2)+10)-23*xCal, (displayWidth/2)-8-j*yCal);
   }
  
 //Gradations fines des degrés
@@ -192,15 +198,15 @@ void graphic(String constChoice, int yValue)
   stroke(#0650E4);
   for (int i = 0; i < 50; i++) {
           j=i*8;
-          line(((displayWidth/2)+10)-5, (displayWidth/2)-10-j, (displayWidth/2)+10,(displayWidth/2)-10-j);
+          line(((displayWidth/2)+10)-5*xCal, (displayWidth/2)-10-j*yCal, (displayWidth/2)+10*xCal,(displayWidth/2)-10-j*yCal);
 }
  
 //Gradations des minutes
  strokeWeight(2);
  for (int i = 0; i < 15; i++) {
           j=i*60;
-          line(((displayWidth/2)+10)+j, (displayWidth/2)-3, ((displayWidth/2)+10)+j,((displayWidth/2)-8));
-          text(i, ((displayWidth/2)+7)+j, ((displayWidth/2)+10));
+          line(((displayWidth/2)+10)+j*xCal, (displayWidth/2)-3*yCal, ((displayWidth/2)+10)+j*xCal,((displayWidth/2)-8*yCal));
+          text(i, ((displayWidth/2)+7)+j*xCal, ((displayWidth/2)+10*yCal));
  }
 }
 
@@ -208,6 +214,10 @@ void graphic(String constChoice, int yValue)
  void newPointTemp(String myPort) {
    
  //Récupération sur le port série de la temperature sous forme de chaine de caractères
+ int idealWidth = width;
+ int idealHeight = height;
+ int xCal = displayWidth / idealWidth;
+ int yCal = displayHeight / idealHeight;
  String tempcar = myPort;
  if (tempcar != null && premier == 1) {
       tempcar = trim(tempcar); // Suppression des blancs
@@ -233,11 +243,11 @@ void graphic(String constChoice, int yValue)
       if (xg == 5) {   //Si on rédémarre une nouvelle courbe
         noStroke();
         fill(230);
-        point(xg+999,950-yg);
+        point((xg+999)*xCal,(950-yg)*yCal);
       }
       else {
         fill(230);
-        line(xg0+1000,950-yg0,xg+999,950-yg);
+        line((xg0+1000)*xCal,(950-yg0)*yCal,(xg+999)*xCal,(950-yg)*yCal);
       }
       
  
