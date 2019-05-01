@@ -24,10 +24,10 @@ boolean s=false;
 Toggle constantToogleHy;
 
 //TODO rename one letter variable for Vivien pleasure ex: pH_checkbox
-int temperature=25;      //Temperature mesurée par l'Arduino
-int tempmini=34;         //Temperature mini mesurée par l'Arduino
-int tempmax=12;          //Temperature maxi mesurée par l'Arduino
-int tempCar=25;
+int constante=25;      //constante d'interêt mesurée par l'Arduino
+int constmini=34;         //constante d'interêt mini mesurée par l'Arduino
+int constmax=12;          // maxi mesurée par l'Arduino
+int constCar=25;
 int m;                   //Indice de travail
 int kn;                   //Indice de travail
 int xg=0;                 //Abcisse
@@ -58,8 +58,9 @@ cp5.addToggle("TempSol").setValue(0).setPosition(800,750).setSize(50,25).setStat
 cp5.addToggle("pH").setValue(0).setPosition(800,850).setSize(50,25).setState(false);
 cp5.addToggle("Ec").setValue(0).setPosition(800,950).setSize(50,25).setState(false);
 
-initConstantViews();
+/*initConstantViews();*/
 }
+
 //TODO Au moment ou il clique sur un bouton, itérer sur la listeToggles et tu les setValue(0) sauf si c'est celle qui vient d'être cliqué 
 
 
@@ -67,24 +68,29 @@ void draw()
 {
   if(cp5.getController("Temp").getValue()==1){
     graphic("Température, °C", 5);
-    newPointTemp("25");
+    newPointConst("25");
     initConstantViews();
+    constPanelMaxMin("Temp");
   }
   if(cp5.getController("Hygro").getValue()==1){
     graphic("Hygrométrie, %", 10);
-    newPointTemp("45");
+    newPointConst("45");
+    constPanelMaxMin("Hygro");
   }
   if(cp5.getController("Ec").getValue()==1){
     graphic("Ec, µS", 1);
-    newPointTemp("1");
+    newPointConst("1");
+    constPanelMaxMin("Ec");
   }
   if(cp5.getController("pH").getValue()==1){
     graphic("pH", 14);
-    newPointTemp("7");
+    newPointConst("7");
+    constPanelMaxMin("pH");
   }
   if(cp5.getController("TempSol").getValue()==1){
     graphic("Température solution, °C", 5);
-    newPointTemp("5");
+    newPointConst("5");
+    constPanelMaxMin("TempSol");
   }
 }
 
@@ -154,6 +160,23 @@ public void pH(String constSelectPrint,boolean constSelect){
   }
 }*/
  //TODO * each x and y by xCal=displayWidth/idealWidth and yCal=displayHeight/idealHeight
+ 
+void constPanelMaxMin(String constChoiceBis)
+{
+  //Calibrate the object related to the laptop screen size
+  int idealWidth = width;
+  int idealHeight = height;
+  int xCalbis = displayWidth / idealWidth;
+  int yCalbis = displayHeight / idealHeight;
+  
+  //Textes
+  fill(0,0,255);
+  text(constChoiceBis + " actuelle :", displayWidth/2+10*xCalbis,displayHeight/2-20*yCalbis);
+  textSize(14);
+  text(constChoiceBis + " mini :", displayWidth/2+200*xCalbis, displayHeight/2-20*yCalbis);
+  textSize(14);
+  text(constChoiceBis + " max :", displayWidth/2+400*xCalbis, displayHeight/2-20*yCalbis);
+}
 
 void graphic(String constChoice, int yValue)
 {
@@ -212,21 +235,22 @@ void graphic(String constChoice, int yValue)
           line(((displayWidth/2)+10)+j*xCal, (displayWidth/2)-3*yCal, ((displayWidth/2)+10)+j*xCal,((displayWidth/2)-8*yCal));
           text(i, ((displayWidth/2)+7)+j*xCal, ((displayWidth/2)+10*yCal));
  }
+ 
 }
 
 //function to mime the serialEvent
- void newPointTemp(String myPort) {
+ void newPointConst(String myPort) {
    
  //Récupération sur le port série de la temperature sous forme de chaine de caractères
  int idealWidth = width;
  int idealHeight = height;
  int xCal = displayWidth / idealWidth;
  int yCal = displayHeight / idealHeight;
- String tempcar = myPort; //myPort.readStringUntil('\n')
- if (tempcar != null && premier == 1) {
-      tempcar = trim(tempcar); // Suppression des blancs
-      int tempInt = int(tempcar);
-      float temperature = float (tempcar);
+ String constCar = myPort; //myPort.readStringUntil('\n')
+ if (constCar != null && premier == 1) {
+      constCar = trim(constCar); // Suppression des blancs
+      int constInt = int(constCar);
+      float constante = float (constCar);
   //    float temperature = tempInt;
       //println ("La temperature est de : " + temperature + " : " + tempInt);
       
@@ -239,10 +263,10 @@ void graphic(String constChoice, int yValue)
       if (xg >600) {xg=5;}
     
       yg0=yg; // Mémorisation ordonnée point précédent
-      yg = tempInt*8; // Un degré correpond à 8 points sur les ordonnées
+      yg = constInt*8; // Un degré correpond à 8 points sur les ordonnées
     
-      if (yg > tempmax*8)  {tempmax = yg/8;} //Mise à jour temp max
-      if (yg < tempmini*8) {tempmini = yg/8;} //Mise à jour temp min
+      if (yg > constmax*8)  {constmax = yg/8;} //Mise à jour temp max
+      if (yg < constmini*8) {constmini = yg/8;} //Mise à jour temp min
     
       if (xg == 5) {   //Si on rédémarre une nouvelle courbe
         noStroke();
@@ -253,22 +277,14 @@ void graphic(String constChoice, int yValue)
         fill(230);
         line((xg0+1000)*xCal,(950-yg0)*yCal,(xg+999)*xCal,(950-yg)*yCal);
       }
-      
-       //Textes
-      fill(0,0,255);
-      text("Température actuelle :", 40, 540);
-      text("Température mini :", 40, 560);
-      text("Température max :", 40, 580);
       textAlign(RIGHT);
       fill(#0BB305);
-      text(tempInt+" °C", 220, 540);
+      text(constInt+" °C", displayWidth/2+125*xCal, displayHeight/2-20*yCal);
       fill(0,0,255);
-      text(tempmini+" °C", 220, 560);
+      text(constmini+" °C", displayWidth/2+300*xCal, displayHeight/2-20*yCal);
       fill(255,0,0);
-      text(tempmax+" °C", 220, 580);
+      text(constmax+" °C", displayWidth/2+500*xCal, displayHeight/2-20*yCal);
       textAlign(LEFT);
-      
- 
  }
 premier = 1;
 }
