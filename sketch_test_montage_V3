@@ -2,8 +2,10 @@ import controlP5.*;
 import processing.serial.*;
 
 ControlP5 cp5;
-Textlabel[] constantLabels;
+Textlabel[] constantLabels, constantPanelLabels;
 Numberbox[] constantNumberboxes;
+Slider[] constantSlider;
+
 //initiatlisations des variables*******************************************************************
 String myPort = "25"; //Serial monPort;  //Déclaration port série pour la lecture des données envoyées par l'Arduino
 int mesure; //Mesure lue sur le port 
@@ -12,6 +14,8 @@ int x = displayWidth/2;
 int y = displayHeight/2;
 int j,k;
 int yOffset = displayHeight / 18;
+
+int sliderLumValue = 100;
 
 float w = 30;
 float h = 30;
@@ -37,10 +41,26 @@ int yg0;                  //Ordonnée précédente
 
 int premier = 0;         // Bypass premiere valeur erronée
 
-StringList togglesNamesList = new StringList("Temp", "Hygro","TempSol","pH","Ec");
+StringList togglesNamesList;
+StringList constantLabelsPanelNamesList;
+
+
 
 void setup()
 {
+ 
+ int spaceToggles = 40;
+  
+ togglesNamesList = new StringList();
+ togglesNamesList.append("Temp");
+ togglesNamesList.append("Hygro");
+ togglesNamesList.append("TempSol");
+ togglesNamesList.append("pH");
+ togglesNamesList.append("Ec");
+ 
+ constantLabelsPanelNamesList = new StringList();
+ constantLabelsPanelNamesList.append("tempMinLabel");
+ constantLabelsPanelNamesList.append("tempMaxLabel");
 
  size(displayWidth,displayHeight);
  
@@ -51,14 +71,15 @@ void setup()
  //listToggles[] = new Numberbox[5];
 
 println(togglesNamesList);
+println(constantLabelsPanelNamesList);
 
-cp5.addToggle("Temp").setValue(0).setPosition(800,550).setSize(50,25).setState(false); //each function return the toggle so at the end you add t
-constantToogleHy = cp5.addToggle("Hygro").setValue(0).setPosition(800,650).setSize(50,25).setState(false);
-cp5.addToggle("TempSol").setValue(0).setPosition(800,750).setSize(50,25).setState(false);
-cp5.addToggle("pH").setValue(0).setPosition(800,850).setSize(50,25).setState(false);
-cp5.addToggle("Ec").setValue(0).setPosition(800,950).setSize(50,25).setState(false);
+cp5.addToggle("Temp").setValue(0).setPosition(850, displayHeight / 2 + yOffset / 4).setSize(50,25).setState(false); //each function return the toggle so at the end you add t
+constantToogleHy = cp5.addToggle("Hygro").setValue(0).setPosition(850,displayHeight / 2 + spaceToggles + yOffset / 4).setSize(50,25).setState(false);
+cp5.addToggle("TempSol").setValue(0).setPosition(850,displayHeight / 2 + spaceToggles*2 + yOffset / 4).setSize(50,25).setState(false);
+cp5.addToggle("pH").setValue(0).setPosition(850,displayHeight / 2 + spaceToggles*2+40 + yOffset / 4).setSize(50,25).setState(false);
+cp5.addToggle("Ec").setValue(0).setPosition(850,displayHeight / 2 + spaceToggles*2+80 + yOffset / 4).setSize(50,25).setState(false);
 
-/*initConstantViews();*/
+initConstantViews();
 }
 
 //TODO Au moment ou il clique sur un bouton, itérer sur la listeToggles et tu les setValue(0) sauf si c'est celle qui vient d'être cliqué 
@@ -67,30 +88,31 @@ cp5.addToggle("Ec").setValue(0).setPosition(800,950).setSize(50,25).setState(fal
 void draw()
 {
   if(cp5.getController("Temp").getValue()==1){
+    initPanelMinMaxViews("Temp");
     graphic("Température, °C", 5);
     newPointConst("25");
-    initConstantViews();
-    constPanelMaxMin("Temp");
   }
   if(cp5.getController("Hygro").getValue()==1){
+    initPanelMinMaxViews("Hygro");
     graphic("Hygrométrie, %", 10);
     newPointConst("45");
-    constPanelMaxMin("Hygro");
+
   }
   if(cp5.getController("Ec").getValue()==1){
+    initPanelMinMaxViews("Ec");
     graphic("Ec, µS", 1);
     newPointConst("1");
-    constPanelMaxMin("Ec");
   }
   if(cp5.getController("pH").getValue()==1){
+    initPanelMinMaxViews("pH");
     graphic("pH", 14);
     newPointConst("7");
-    constPanelMaxMin("pH");
+    initPanelMinMaxViews("pH");
   }
   if(cp5.getController("TempSol").getValue()==1){
+    initPanelMinMaxViews("TempSol");
     graphic("Température solution, °C", 5);
     newPointConst("5");
-    constPanelMaxMin("TempSol");
   }
 }
 
@@ -107,8 +129,7 @@ void controlEvent(ControlEvent theEvent) {
      if (togglesNamesList.hasValue(clickedToggleName)){
        for(int i=0; i<togglesNamesList.size(); i++){
          if(togglesNamesList.get(i)!=clickedToggleName){
-           cp5.getController(togglesNamesList.get(i)).setValue(0);
-           println(togglesNamesList.get(i));
+           cp5.getController(togglesNamesList.get(i)).setValue(0);          
          }
        }
      }
@@ -159,24 +180,7 @@ public void pH(String constSelectPrint,boolean constSelect){
     constSelect=false;
   }
 }*/
- //TODO * each x and y by xCal=displayWidth/idealWidth and yCal=displayHeight/idealHeight
- 
-void constPanelMaxMin(String constChoiceBis)
-{
-  //Calibrate the object related to the laptop screen size
-  int idealWidth = width;
-  int idealHeight = height;
-  int xCalbis = displayWidth / idealWidth;
-  int yCalbis = displayHeight / idealHeight;
-  
-  //Textes
-  fill(0,0,255);
-  text(constChoiceBis + " actuelle :", displayWidth/2+10*xCalbis,displayHeight/2-20*yCalbis);
-  textSize(14);
-  text(constChoiceBis + " mini :", displayWidth/2+200*xCalbis, displayHeight/2-20*yCalbis);
-  textSize(14);
-  text(constChoiceBis + " max :", displayWidth/2+400*xCalbis, displayHeight/2-20*yCalbis);
-}
+
 
 void graphic(String constChoice, int yValue)
 {
@@ -191,28 +195,35 @@ void graphic(String constChoice, int yValue)
   
   //Affichage case pour les grahiques
   fill(255, 255, 255);
+  stroke(0,0,0);
   rect((displayWidth/2)-20,displayHeight/2,((displayWidth/2) - yOffset)+20,((displayHeight/2-yOffset) - yOffset)+20);
   
   
   //affichages axes
   fill(0,0,255);
-  stroke(#0650E4);
+  //stroke(#0650E4);
+  stroke(0,0,0);
   strokeWeight(2);
   
   //horizontal
+  stroke(0,0,0);
   line ((displayWidth/2)+10*xCal,(displayHeight/2)+6*yCal,(displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal);
+  stroke(0,0,0);
   triangle(((displayWidth/2)+5*xCal), (displayHeight/2)+10*yCal, (displayWidth/2)+10*xCal, (displayHeight/2)+2*yCal, (displayWidth/2)+15*xCal,(displayHeight/2)+10*yCal);
   text(constChoice, (displayWidth/2)+15*xCal,(displayHeight/2)+12*yCal);
  
   //vertical
+  stroke(0,0,0);
   line ((displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal,(displayWidth-yOffset)-10*xCal,(displayWidth/2)-10*yCal);
+  stroke(0,0,0);
   triangle(((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-15*yCal, ((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-6*yCal, (displayWidth-yOffset)-5*xCal, (displayWidth/2)-10*yCal);
   text("Temps", ((displayWidth/2)+(displayWidth/2-yOffset))-40*xCal,(displayWidth/2)-20*yCal);
  
   //Gradations et textes tous les 5 degrés
   fill(0,0,255);
   strokeWeight(2);
-  stroke(#0650E4);
+  //stroke(#0650E4);
+  stroke(0,0,0);
   for (int i = 0; i < 11; i++) {
       j=i*40;
       k=i*yValue;
@@ -222,7 +233,8 @@ void graphic(String constChoice, int yValue)
  
 //Gradations fines des degrés
   strokeWeight(1);
-  stroke(#0650E4);
+  //stroke(#0650E4);
+  stroke(0,0,0);
   for (int i = 0; i < 50; i++) {
           j=i*8;
           line(((displayWidth/2)+10)-5*xCal, (displayWidth/2)-10-j*yCal, (displayWidth/2)+10*xCal,(displayWidth/2)-10-j*yCal);
@@ -277,44 +289,87 @@ void graphic(String constChoice, int yValue)
         fill(230);
         line((xg0+1000)*xCal,(950-yg0)*yCal,(xg+999)*xCal,(950-yg)*yCal);
       }
-      textAlign(RIGHT);
+
+      /*textAlign(RIGHT);
       fill(#0BB305);
-      text(constInt+" °C", displayWidth/2+125*xCal, displayHeight/2-20*yCal);
+      text(constInt+"°C", displayWidth/2+125*xCal, displayHeight/2-20*yCal);
       fill(0,0,255);
-      text(constmini+" °C", displayWidth/2+300*xCal, displayHeight/2-20*yCal);
+      text(constmini+"°C", displayWidth/2+300*xCal, displayHeight/2-20*yCal);
       fill(255,0,0);
-      text(constmax+" °C", displayWidth/2+500*xCal, displayHeight/2-20*yCal);
-      textAlign(LEFT);
+      text(constmax+"°C", displayWidth/2+500*xCal, displayHeight/2-20*yCal);
+      textAlign(LEFT);*/
  }
 premier = 1;
 }
+/*
+     // clicking on toggle hide constMin/Max numberBox
+    constantNumberboxes[i].getCaptionLabel().setVisible(false);
+    constantLabels[i].hide();
+    constantNumberboxes[i].hide();
+    constantNumberboxes[i].lock();
+*/
+     
+  void initPanelMinMaxViews(String constChoiceBis)
+{
+  //int yOffset = displayHeight / 18;
+  //String currentControllerName = cp5.getController(constantLabelsPanelNamesList[1]).getName()
+  if(cp5.getController(constChoiceBis).getValue()==1){
+  background(215);
+  cp5.getController(constantLabelsPanelNamesList.get(0)).setValueLabel(constChoiceBis + " mini :");
+  cp5.getController(constantLabelsPanelNamesList.get(1)).setValueLabel(constChoiceBis+ " max :");
+  }
+}
+
+
 
   void initConstantViews()
 {
   int yOffset = displayHeight / 18;
+  //Calibrate the object related to the laptop screen size
+  int idealWidth = width;
+  int idealHeight = height;
+  int xCalbis = displayWidth / idealWidth;
+  int yCalbis = displayHeight / idealHeight;
   constantLabels = new Textlabel[5];
-  constantNumberboxes = new Numberbox[5];
+  constantNumberboxes = new Numberbox[7];
+  constantSlider = new Slider[1];
+  constantPanelLabels = new Textlabel[2];
+  
+  
+  constantSlider[0] = cp5.addSlider(" Power lighting").setRange(0,100).setValue(0).setPosition(10, displayHeight / 2 + 5 * yOffset + yOffset / 4).setSize(100,10);
+  //constantSlider[0] = cp5.addSlider(" Power lighting").setRange(0,100).setValue(0).setPosition(10, displayHeight / 2 + 5 * yOffset + yOffset / 4).setSize(100,10);
 
   constantLabels[0] = cp5.addTextlabel("tempLabel", "TEMPERATURE", 10, displayHeight / 2 + yOffset / 4);
   constantLabels[1] = cp5.addTextlabel("hydroLabel", "HYDROMETRIE", 10, displayHeight / 2 + 1 * yOffset + yOffset / 4);
   constantLabels[2] = cp5.addTextlabel("phLabel", "pH", 10, displayHeight / 2 + 2 * yOffset + yOffset / 4);
   constantLabels[3] = cp5.addTextlabel("ecLabel", "Ec", 10, displayHeight / 2 + 3 * yOffset + yOffset / 4);
   constantLabels[4] = cp5.addTextlabel("co2Label", "CO2", 10, displayHeight / 2 + 4 * yOffset + yOffset / 4);
+  //constantLabels[5] = cp5.addTextlabel("tempMinLabel", constChoiceBis + " mini :",displayWidth/2+200*xCalbis, displayHeight/2-20*yCalbis);
+  //constantLabels[6] = cp5.addTextlabel("tempMaxLabel", constChoiceBis + " max :",displayWidth/2+400*xCalbis, displayHeight/2-20*yCalbis);
 
   constantNumberboxes[0] = cp5.addNumberbox("tempNumberbox", 100, displayHeight / 2 + yOffset / 4, 40, 14);
   constantNumberboxes[1] = cp5.addNumberbox("hydroNumberbox", 100, displayHeight / 2 + 1 * yOffset + yOffset / 4, 40, 14);
   constantNumberboxes[2] = cp5.addNumberbox("phNumberbox", 100, displayHeight / 2 + 2 * yOffset + yOffset / 4, 40, 14);
   constantNumberboxes[3] = cp5.addNumberbox("ecNumberbox", 100, displayHeight / 2 + 3 * yOffset + yOffset / 4, 40, 14);
   constantNumberboxes[4] = cp5.addNumberbox("co2Numberbox", 100, displayHeight / 2 + 4 * yOffset + yOffset / 4, 40, 14);
+  constantNumberboxes[5] = cp5.addNumberbox("  ").setValue(0).setPosition(1025,displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  constantNumberboxes[6] = cp5.addNumberbox("").setValue(0).setPosition(1200, displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  
+  constantPanelLabels[0] = cp5.addTextlabel("tempMinLabel").setValueLabel(" mini :").setPosition(965,displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  constantPanelLabels[1] = cp5.addTextlabel("tempMaxLabel").setValueLabel(" max :").setPosition(1140,displayHeight / 2 - 1 * yOffset + yOffset / 4);
 
-  for (int i = 0; i < 5; i++)
+
+
+
+//Don't put this code if you have not automate connected to the pc
+  /*for (int i = 0; i < 5; i++)
   {
     // Dont display the name for controllers
     constantNumberboxes[i].getCaptionLabel().setVisible(false);
     constantLabels[i].hide();
     constantNumberboxes[i].hide();
     constantNumberboxes[i].lock();
-  }
+  }*/
 }
  
 //Recuperation des données envoyé par le arduino/******************************************************************************
