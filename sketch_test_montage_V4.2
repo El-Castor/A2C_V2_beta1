@@ -1,10 +1,14 @@
 import controlP5.*;
 import processing.serial.*;
+import processing.video.*;
 
 ControlP5 cp5;
 Textlabel[] constantLabels, constantPanelLabels;
 Numberbox[] constantNumberboxes;
 Slider[] constantSlider;
+
+// Video elements
+Capture cam;
 
 //initiatlisations des variables*******************************************************************
 String myPort = "25"; //Serial monPort;  //Déclaration port série pour la lecture des données envoyées par l'Arduino
@@ -67,6 +71,7 @@ int yOffset = displayHeight / 18;
  constantLabelsPanelNamesList = new StringList();
  constantLabelsPanelNamesList.append("tempMinLabel");
  constantLabelsPanelNamesList.append("tempMaxLabel");
+ 
 
  size(displayWidth,displayHeight);
  
@@ -86,6 +91,7 @@ cp5.addToggle("pH").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2
 cp5.addToggle("Ec").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2 + spaceToggles*2+80 + yOffset / 4).setSize(50,25).setState(false);
 
 initConstantViews();
+mainScreenSetup();
 println(yOffset);
 }
 
@@ -120,6 +126,14 @@ void draw()
     graphic("Température solution, °C", 5);
     newPointConst("5");
   }
+  
+  if (cam != null) 
+    {
+      if (cam.available() == true)
+        cam.read();
+
+      image(cam, displayWidth - displayWidth/3 - 10, 10, displayWidth / 3, displayHeight / 3);
+    }
 }
 
 void controlEvent(ControlEvent theEvent) {
@@ -187,6 +201,41 @@ public void pH(String constSelectPrint,boolean constSelect){
   }
 }*/
 
+void cameraSetup()
+{
+  String[] cameras = Capture.list();
+
+  if (cameras.length == 0) 
+  {
+    exit();
+  } else 
+  {
+    // The camera can be initialized directly using an 
+    // element from the array returned by list():
+    cam = new Capture(this, cameras[0]);
+    cam.start();
+  }
+}
+
+void mainScreenSetup()
+{
+  //frame.setLocation(0, 0);
+  //frame.setSize(displayWidth, displayHeight);
+  //connectButton.hide();
+  //serialPortDDList.hide();
+  //modeDDList.show();
+  //isConnected = true;
+
+ // myPort = new Serial(this, selectedPort, 9600);  
+ // dataRead = myPort.readStringUntil(10);
+
+ // for (int i = 0; i < 5; i++)
+ // {
+  //  constantLabels[i].show();
+  //  constantNumberboxes[i].show();
+ // }
+  thread("cameraSetup");
+}
 
 void graphic(String constChoice, int yValue)
 {
@@ -211,16 +260,16 @@ void graphic(String constChoice, int yValue)
   stroke(0,0,0);
   strokeWeight(2);
   
-  //horizontal
+  //vertical
   stroke(0,0,0);
-  line ((displayWidth/2)+10*xCal,(displayHeight/2)+6*yCal,(displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal);
+  line (((displayWidth/2)+5*xCal),(displayHeight/2)+10*yCal,(displayWidth/2)+5*xCal, (displayWidth/2)+10*xCal);
   stroke(0,0,0);
   triangle(((displayWidth/2)+5*xCal), (displayHeight/2)+10*yCal, (displayWidth/2)+10*xCal, (displayHeight/2)+2*yCal, (displayWidth/2)+15*xCal,(displayHeight/2)+10*yCal);
   text(constChoice, (displayWidth/2)+15*xCal,(displayHeight/2)+12*yCal);
  
-  //vertical
+  //horizontal
   stroke(0,0,0);
-  line ((displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal,(displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal);
+  line (((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-15*yCal,(displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal);
   stroke(0,0,0);
   triangle(((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-15*yCal, ((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-6*yCal, (displayWidth-yOffset)-5*xCal, (displayWidth/2)-10*yCal);
   text("Temps", ((displayWidth/2)+(displayWidth/2-yOffset))-40*xCal,(displayWidth/2)-20*yCal);
