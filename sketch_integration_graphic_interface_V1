@@ -1,0 +1,535 @@
+
+    
+
+/**
+ * Control5 DropdownList
+ * A dropdownList controller, extends the ListBox controller.
+ * the most recently selected dropdownlist item is displayed inside
+ * the menu bar of the DropdownList.
+ *
+ * find a list of public methods available for the DropdownList Controller 
+ * at the bottom of this sketch's source code
+ *
+ *
+ * by andreas schlegel, 2012
+ * www.sojamo.de/libraries/controlp5
+ */
+
+import processing.serial.*;
+import controlP5.*;
+import processing.video.*;
+
+// Serial variables
+Serial myPort;  // Create object from Serial class
+String dataRead = null;
+
+// Data received from the serial port
+String temperature = "0"; 
+String humidity = "0";
+String phValue = "0";
+String ecValue = "0";
+
+boolean firstContact = false;
+
+// GUI elements
+ControlP5 cp5;
+DropdownList serialPortDDList;
+DropdownList modeDDList;
+Button connectButton;
+Textlabel errorLabel;
+Textlabel[] constantLabels, constantPanelLabels;
+Numberbox[] constantNumberboxes;
+Slider[] constantSlider;
+Toggle[] constantToggles;
+
+// Video elements
+Capture cam;
+
+// Boolean variables
+boolean isConnected;
+
+// Data variables
+String selectedPort;
+StringList constantLabelsPanelNamesList;
+StringList togglesNamesList;
+
+//TODO rename one letter variable for Vivien pleasure ex: pH_checkbox
+int constante=25;      //constante d'interêt mesurée par l'Arduino
+int constmini=34;         //constante d'interêt mini mesurée par l'Arduino
+int constmax=12;          // maxi mesurée par l'Arduino
+int constCar=25;
+int m;                   //Indice de travail
+int kn;                   //Indice de travail
+int xg=0;                 //Abcisse
+int xg0=0;                //Abcisse précédente
+int yg=0;                 //Ordonnée
+int yg0;                  //Ordonnée précédente
+
+int x = displayWidth/2;
+int y = displayHeight/2;
+
+int premier = 0;         // Bypass premiere valeur erronée
+
+// Run the app in fullscreen mode
+boolean sketchFullScreen() 
+{
+  return true;
+}
+
+
+
+void setup() 
+{
+  size(displayWidth, displayHeight);
+
+  if (frame != null) {
+    frame.setResizable(true);
+  }
+
+  cp5 = new ControlP5(this);
+  isConnected = false;
+
+  connectionScreenSetup();
+  initConstantViews();
+  initSelectingViews();
+  
+ constantLabelsPanelNamesList = new StringList();
+ constantLabelsPanelNamesList.append("tempMinLabel");
+ constantLabelsPanelNamesList.append("tempMaxLabel");
+ 
+ togglesNamesList = new StringList();
+ togglesNamesList.append("Temp");
+ togglesNamesList.append("Hygro");
+ togglesNamesList.append("TempSol");
+ togglesNamesList.append("pH");
+ togglesNamesList.append("Ec");
+}
+
+void cameraSetup()
+{
+  String[] cameras = Capture.list();
+
+  if (cameras.length == 0) 
+  {
+    exit();
+  } else 
+  {
+    // The camera can be initialized directly using an 
+    // element from the array returned by list():
+    cam = new Capture(this, cameras[0]);
+    cam.start();
+  }
+}
+
+void connectionScreenSetup()
+{
+  errorLabel = cp5.addTextlabel("errorLabel", "Veuillez choisir un port", 150, 134);
+  errorLabel.setColorValue(color(255, 0, 0));
+  errorLabel.hide();
+
+  connectButton = cp5.addButton("Connect", 1, displayWidth / 2 - 40, 2 * displayHeight / 3, 80, 20);
+  connectButton.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+
+  // create a DropdownList for chossing Serial Port
+  serialPortDDList = cp5.addDropdownList("portCOM_DDL")
+    .setPosition(displayWidth / 2 - 100, displayHeight / 2)
+      .setSize(200, 200)
+        ;
+
+  customizeSerialDDList(serialPortDDList);
+}
+
+void mainScreenSetup()
+{
+  //frame.setLocation(0, 0);
+  //frame.setSize(displayWidth, displayHeight);
+  connectButton.hide();
+  serialPortDDList.hide();
+  modeDDList.show();
+  isConnected = true;
+
+  myPort = new Serial(this, selectedPort, 9600);  
+  dataRead = myPort.readStringUntil(10);
+
+  for (int i = 0; i < 5; i++)
+  {
+    constantLabels[i].show();
+  }
+  for (int j = 0; j < 7; j++)
+  {
+    constantNumberboxes[j].show();
+  }
+  for (int m = 0; m < 1; m++)
+  {
+    constantSlider[m].show();
+  }
+  for (int n = 0; n < 1; n++)
+  {
+    constantPanelLabels[n].show();
+  }
+  for (int z = 0; z < 1; z++)
+  {
+  constantToggles[z].show();
+  }
+  
+
+  
+  thread("cameraSetup");
+}
+
+void customizeSerialDDList(DropdownList ddl) 
+{
+  // a convenience function to customize a DropdownList
+  ddl.setBackgroundColor(color(190));
+  ddl.setItemHeight(20);
+  ddl.setBarHeight(15);
+  ddl.captionLabel().set("Port COM");
+  ddl.captionLabel().style().marginTop = 3;
+  ddl.captionLabel().style().marginLeft = 3;
+  ddl.valueLabel().style().marginTop = 3;
+
+  String[] serialPortList = Serial.list();
+  for (int i = 0; i < serialPortList.length; i++) 
+  {
+    ddl.addItem(serialPortList[i], i);
+  }
+  //ddl.scroll(0);
+  ddl.setColorBackground(color(60));
+  ddl.setColorActive(color(255, 128));
+}
+
+void customizeModeDDList(DropdownList ddl)
+{
+  // a convenience function to customize a DropdownList
+  ddl.setBackgroundColor(color(190));
+  ddl.setItemHeight(20);
+  ddl.setBarHeight(15);
+  ddl.captionLabel().set("Chosir mode");
+  ddl.captionLabel().style().marginTop = 3;
+  ddl.captionLabel().style().marginLeft = 3;
+  ddl.valueLabel().style().marginTop = 3;
+
+  ddl.addItem("Mode croissance", 1);
+  ddl.addItem("Mode floraison", 2);
+  ddl.addItem("Mode fin de floraison", 3);
+
+  ddl.setColorBackground(color(60));
+  ddl.setColorActive(color(255, 128));
+}
+
+void initSelectingViews()
+{
+  // create a DropdownList for chossing Serial Port
+  modeDDList = cp5.addDropdownList("mode_DDL")
+    .setPosition(displayWidth / 40, displayHeight / 20)
+      .setSize(300, 200)
+        ;
+  modeDDList.hide();
+  customizeModeDDList(modeDDList);
+}
+
+void initConstantViews()
+{
+  int yOffset = displayHeight / 18;
+    //Calibrate the object related to the laptop screen size
+  int idealWidth = width;
+  int idealHeight = height;
+  int xCalbis = displayWidth / idealWidth;
+  int yCalbis = displayHeight / idealHeight;
+  int spaceToggles = 40;
+  constantLabels = new Textlabel[5];
+  constantNumberboxes = new Numberbox[7];
+  constantSlider = new Slider[1];
+  constantPanelLabels = new Textlabel[2];
+  constantToggles = new Toggle[5];
+  
+
+  constantSlider[0] = cp5.addSlider(" Power lighting").setRange(0,100).setValue(0).setPosition(10, displayHeight / 2 + 5 * yOffset + yOffset / 4).setSize(100,10);
+
+  constantLabels[0] = cp5.addTextlabel("tempLabel", "TEMPERATURE", 10, displayHeight / 2 + yOffset / 4);
+  constantLabels[1] = cp5.addTextlabel("hydroLabel", "HYDROMETRIE", 10, displayHeight / 2 + 1 * yOffset + yOffset / 4);
+  constantLabels[2] = cp5.addTextlabel("phLabel", "pH", 10, displayHeight / 2 + 2 * yOffset + yOffset / 4);
+  constantLabels[3] = cp5.addTextlabel("ecLabel", "Ec", 10, displayHeight / 2 + 3 * yOffset + yOffset / 4);
+  constantLabels[4] = cp5.addTextlabel("co2Label", "CO2", 10, displayHeight / 2 + 4 * yOffset + yOffset / 4);
+
+  constantNumberboxes[0] = cp5.addNumberbox("tempNumberbox", 100, displayHeight / 2 + yOffset / 4, 40, 14);
+  constantNumberboxes[1] = cp5.addNumberbox("hydroNumberbox", 100, displayHeight / 2 + 1 * yOffset + yOffset / 4, 40, 14);
+  constantNumberboxes[2] = cp5.addNumberbox("phNumberbox", 100, displayHeight / 2 + 2 * yOffset + yOffset / 4, 40, 14);
+  constantNumberboxes[3] = cp5.addNumberbox("ecNumberbox", 100, displayHeight / 2 + 3 * yOffset + yOffset / 4, 40, 14);
+  constantNumberboxes[4] = cp5.addNumberbox("co2Numberbox", 100, displayHeight / 2 + 4 * yOffset + yOffset / 4, 40, 14);
+  constantNumberboxes[5] = cp5.addNumberbox("  ").setValue(0).setPosition(displayWidth/2+100,displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  constantNumberboxes[6] = cp5.addNumberbox("").setValue(0).setPosition(displayWidth/2+300, displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  
+  constantPanelLabels[0] = cp5.addTextlabel("tempMinLabel").setValueLabel(" mini :").setPosition(displayWidth/2,displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  constantPanelLabels[1] = cp5.addTextlabel("tempMaxLabel").setValueLabel(" max :").setPosition(displayWidth/2+200,displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  
+  constantToggles[0] = cp5.addToggle("Temp").setValue(0).setPosition(displayWidth/2-100, displayHeight / 2 + yOffset / 4).setSize(50,25).setState(false); //each function return the toggle so at the end you add t
+  constantToggles[1] = cp5.addToggle("Hygro").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2 + spaceToggles + yOffset / 4).setSize(50,25).setState(false);
+  constantToggles[2] = cp5.addToggle("TempSol").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2 + spaceToggles*2 + yOffset / 4).setSize(50,25).setState(false);
+  constantToggles[3] = cp5.addToggle("pH").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2 + spaceToggles*2+40 + yOffset / 4).setSize(50,25).setState(false);
+  constantToggles[4] = cp5.addToggle("Ec").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2 + spaceToggles*2+80 + yOffset / 4).setSize(50,25).setState(false);
+
+
+  for (int i = 0; i < 7; i++)
+  {
+    // Dont display the name for controllers
+    constantNumberboxes[i].getCaptionLabel().setVisible(false);
+    constantNumberboxes[i].hide();
+    constantNumberboxes[i].lock();
+  }
+  for (int j = 0; j < 2; j++)
+  {
+  constantPanelLabels[j].hide();
+  }
+  for (int m = 0; m < 1; m++)
+  {
+  constantSlider[m].hide();
+  }
+  for (int n = 0; n < 5; n++)
+  {
+  constantLabels[n].hide();
+  }
+  for (int z = 0; z < 5; z++)
+  {
+  constantToggles[z].hide();
+  }
+}
+
+void controlEvent(ControlEvent theEvent) {
+  if (theEvent.isGroup())
+  {
+    if (theEvent.getGroup().getName() == "portCOM_DDL")
+    {
+      errorLabel.hide();
+      float eventValue = theEvent.getGroup().getValue();
+      String[] serialPortList = Serial.list();
+      selectedPort = serialPortList[(int)eventValue];
+    } else if (theEvent.getGroup().getName() == "mode_DDL")
+    {
+      float eventValue = theEvent.getGroup().getValue();
+      myPort.write((int)eventValue);
+      println("New mode: ", (int)eventValue);
+    }
+  } else if (theEvent.isController()) 
+  {
+    if (theEvent.controller().name()=="Connect")
+    {
+      if (selectedPort != null) 
+      {
+        mainScreenSetup();
+      } else
+      {
+        errorLabel.show();
+      }
+    }
+  }
+}
+
+void serialEvent(Serial myPort) 
+{
+  dataRead = myPort.readStringUntil('\n');
+
+
+  if (dataRead != null)
+  {
+    dataRead = trim(dataRead);
+    println(dataRead);
+
+    String[] dataBlocks = split(dataRead, ",");
+
+    if (dataBlocks[0] != null)
+    {
+      temperature = dataBlocks[0];
+    }
+    if (dataBlocks[1] != null)
+    {
+      humidity = dataBlocks[1];
+    }
+    if (dataBlocks[2] != null)
+    {
+      phValue = dataBlocks[2];
+    }
+    
+    if (temperature != null & humidity != null)
+    {
+      constantNumberboxes[0].setValue(float(temperature));
+      constantNumberboxes[1].setValue(float(humidity));
+      constantNumberboxes[2].setValue(float(phValue));
+    }
+  }
+}
+
+void graphic(String constChoice, int yValue)
+{
+  int x = displayWidth/2;
+  int y = displayHeight/2;
+  int j,k;
+  int yOffset = displayHeight / 18;
+  int idealWidth = width;
+  int idealHeight = height;
+  int xCal = displayWidth / idealWidth;
+  int yCal = displayHeight / idealHeight;
+  
+  //Affichage case pour les grahiques
+  fill(255, 255, 255);
+  stroke(0,0,0);
+  rect((displayWidth/2)-20,displayHeight/2,((displayWidth/2) - yOffset)+20,((displayHeight/2-yOffset) - yOffset)+20);
+  
+  
+  //affichages axes
+  fill(0,0,255);
+  //stroke(#0650E4);
+  stroke(0,0,0);
+  strokeWeight(2);
+  
+  //vertical
+  stroke(0,0,0);
+  line (((displayWidth/2)+5*xCal),(displayHeight/2)+10*yCal,(displayWidth/2)+5*xCal, (displayWidth/2)+10*xCal);
+  stroke(0,0,0);
+  triangle(((displayWidth/2)+5*xCal), (displayHeight/2)+10*yCal, (displayWidth/2)+10*xCal, (displayHeight/2)+2*yCal, (displayWidth/2)+15*xCal,(displayHeight/2)+10*yCal);
+  text(constChoice, (displayWidth/2)+15*xCal,(displayHeight/2)+12*yCal);
+ 
+  //horizontal
+  stroke(0,0,0);
+  line (((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-15*yCal,(displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal);
+  stroke(0,0,0);
+  triangle(((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-15*yCal, ((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-6*yCal, (displayWidth-yOffset)-5*xCal, (displayWidth/2)-10*yCal);
+  text("Temps", ((displayWidth/2)+(displayWidth/2-yOffset))-40*xCal,(displayWidth/2)-20*yCal);
+ 
+  //Gradations et textes tous les 5 degrés
+  fill(0,0,255);
+  strokeWeight(2);
+  //stroke(#0650E4);
+  stroke(0,0,0);
+  for (int i = 0; i < 11; i++) {
+      j=i*40;
+      k=i*yValue;
+      line(((displayWidth/2)+10)-5*xCal, (displayWidth/2)-10-j*yCal, (displayWidth/2)+10*xCal,(displayWidth/2)-10-j*yCal);
+      text(k, ((displayWidth/2)+10)-23*xCal, (displayWidth/2)-8-j*yCal);
+  }
+ 
+//Gradations fines des degrés
+  strokeWeight(1);
+  //stroke(#0650E4);
+  stroke(0,0,0);
+  for (int i = 0; i < 50; i++) {
+          j=i*8;
+          line(((displayWidth/2)+10)-5*xCal, (displayWidth/2)-10-j*yCal, (displayWidth/2)+10*xCal,(displayWidth/2)-10-j*yCal);
+}
+ 
+//Gradations des minutes
+ strokeWeight(2);
+ for (int i = 0; i < 15; i++) {
+          j=i*60;
+          line(((displayWidth/2)+10)+j*xCal, (displayWidth/2)-3*yCal, ((displayWidth/2)+10)+j*xCal,((displayWidth/2)-8*yCal));
+          text(i, ((displayWidth/2)+7)+j*xCal, ((displayWidth/2)+10*yCal));
+ }
+ 
+}
+
+  void initPanelMinMaxViews(String constChoiceBis)
+{
+  //int yOffset = displayHeight / 18;
+  //String currentControllerName = cp5.getController(constantLabelsPanelNamesList[1]).getName()
+  if(cp5.getController(constChoiceBis).getValue()==1){
+  background(215);
+  cp5.getController(constantLabelsPanelNamesList.get(0)).setValueLabel(constChoiceBis + " mini :");
+  cp5.getController(constantLabelsPanelNamesList.get(1)).setValueLabel(constChoiceBis+ " max :");
+  }
+}
+
+void newPointConst(String myPort) {
+   
+ //Récupération sur le port série de la temperature sous forme de chaine de caractères
+ int idealWidth = width;
+ int idealHeight = height;
+ int xCal = displayWidth / idealWidth;
+ int yCal = displayHeight / idealHeight;
+ String constCar = myPort; //myPort.readStringUntil('\n')
+ if (constCar != null && premier == 1) {
+      constCar = trim(constCar); // Suppression des blancs
+      int constInt = int(constCar);
+      float constante = float (constCar);
+  //    float temperature = tempInt;
+      //println ("La temperature est de : " + temperature + " : " + tempInt);
+      
+ //Dessin graphe avec temperature actuelle -----------------------
+      strokeWeight(1);
+  
+      //dessin du nouveau point sur la courbe
+      xg0=x; // Mémorisation abscisse point précédent
+      xg=xg+5; // L'Arduino envoie une nouvelle mesure de température toutes les 5 secondes
+      if (xg >600) {xg=5;}
+    
+      yg0=yg; // Mémorisation ordonnée point précédent
+      yg = constInt*8; // Un degré correpond à 8 points sur les ordonnées
+    
+      if (yg > constmax*8)  {constmax = yg/8;} //Mise à jour temp max
+      if (yg < constmini*8) {constmini = yg/8;} //Mise à jour temp min
+    
+      if (xg == 5) {   //Si on rédémarre une nouvelle courbe
+        noStroke();
+        fill(230);
+        point((xg+999)*xCal,(950-yg)*yCal);
+      }
+      else {
+        fill(230);
+        line((xg0+1000)*xCal,(950-yg0)*yCal,(xg+999)*xCal,(950-yg)*yCal);
+      }
+
+      /*textAlign(RIGHT);
+      fill(#0BB305);
+      text(constInt+"°C", displayWidth/2+125*xCal, displayHeight/2-20*yCal);
+      fill(0,0,255);
+      text(constmini+"°C", displayWidth/2+300*xCal, displayHeight/2-20*yCal);
+      fill(255,0,0);
+      text(constmax+"°C", displayWidth/2+500*xCal, displayHeight/2-20*yCal);
+      textAlign(LEFT);*/
+ }
+premier = 1;
+}
+
+void draw() 
+{
+  background(128);
+
+  if (isConnected == true) 
+  {
+    line(0, displayHeight/2, displayWidth, displayHeight/2);
+    stroke(160);
+
+    if (cam != null) 
+    {
+      if (cam.available() == true)
+        cam.read();
+
+      image(cam, displayWidth - displayWidth/3 - 10, 10, displayWidth / 3, displayHeight / 3);
+    }
+    if(cp5.getController("Temp").getValue()==1){
+    initPanelMinMaxViews("Temp");
+    graphic("Température, °C", 5);
+    newPointConst("25");
+    }
+    if(cp5.getController("Hygro").getValue()==1){
+    initPanelMinMaxViews("Hygro");
+    graphic("Hygrométrie, %", 10);
+    newPointConst("45");
+
+    }
+    if(cp5.getController("Ec").getValue()==1){
+    initPanelMinMaxViews("Ec");
+    graphic("Ec, µS", 1);
+    newPointConst("1");
+    }
+    if(cp5.getController("pH").getValue()==1){
+    initPanelMinMaxViews("pH");
+    graphic("pH", 14);
+    newPointConst("7");
+    }
+    if(cp5.getController("TempSol").getValue()==1){
+    initPanelMinMaxViews("TempSol");
+    graphic("Température solution, °C", 5);
+    newPointConst("5");
+    }
+  }
+}
