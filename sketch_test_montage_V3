@@ -48,7 +48,13 @@ StringList constantLabelsPanelNamesList;
 
 void setup()
 {
- 
+//calibration of the object position related to the screen laptop
+int idealWidth = width;
+int idealHeight = height;
+int xCal = displayWidth / idealWidth;
+int yCal = displayHeight / idealHeight;
+int yOffset = displayHeight / 18;
+  
  int spaceToggles = 40;
   
  togglesNamesList = new StringList();
@@ -73,13 +79,14 @@ void setup()
 println(togglesNamesList);
 println(constantLabelsPanelNamesList);
 
-cp5.addToggle("Temp").setValue(0).setPosition(850, displayHeight / 2 + yOffset / 4).setSize(50,25).setState(false); //each function return the toggle so at the end you add t
-constantToogleHy = cp5.addToggle("Hygro").setValue(0).setPosition(850,displayHeight / 2 + spaceToggles + yOffset / 4).setSize(50,25).setState(false);
-cp5.addToggle("TempSol").setValue(0).setPosition(850,displayHeight / 2 + spaceToggles*2 + yOffset / 4).setSize(50,25).setState(false);
-cp5.addToggle("pH").setValue(0).setPosition(850,displayHeight / 2 + spaceToggles*2+40 + yOffset / 4).setSize(50,25).setState(false);
-cp5.addToggle("Ec").setValue(0).setPosition(850,displayHeight / 2 + spaceToggles*2+80 + yOffset / 4).setSize(50,25).setState(false);
+cp5.addToggle("Temp").setValue(0).setPosition(displayWidth/2-100, displayHeight / 2 + yOffset / 4).setSize(50,25).setState(false); //each function return the toggle so at the end you add t
+constantToogleHy = cp5.addToggle("Hygro").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2 + spaceToggles + yOffset / 4).setSize(50,25).setState(false);
+cp5.addToggle("TempSol").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2 + spaceToggles*2 + yOffset / 4).setSize(50,25).setState(false);
+cp5.addToggle("pH").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2 + spaceToggles*2+40 + yOffset / 4).setSize(50,25).setState(false);
+cp5.addToggle("Ec").setValue(0).setPosition(displayWidth/2-100,displayHeight / 2 + spaceToggles*2+80 + yOffset / 4).setSize(50,25).setState(false);
 
 initConstantViews();
+println(yOffset);
 }
 
 //TODO Au moment ou il clique sur un bouton, itérer sur la listeToggles et tu les setValue(0) sauf si c'est celle qui vient d'être cliqué 
@@ -107,7 +114,6 @@ void draw()
     initPanelMinMaxViews("pH");
     graphic("pH", 14);
     newPointConst("7");
-    initPanelMinMaxViews("pH");
   }
   if(cp5.getController("TempSol").getValue()==1){
     initPanelMinMaxViews("TempSol");
@@ -214,7 +220,7 @@ void graphic(String constChoice, int yValue)
  
   //vertical
   stroke(0,0,0);
-  line ((displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal,(displayWidth-yOffset)-10*xCal,(displayWidth/2)-10*yCal);
+  line ((displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal,(displayWidth/2)+10*xCal,(displayWidth/2)-10*yCal);
   stroke(0,0,0);
   triangle(((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-15*yCal, ((displayWidth/2)+(displayWidth/2-yOffset))-15*xCal,(displayWidth/2)-6*yCal, (displayWidth-yOffset)-5*xCal, (displayWidth/2)-10*yCal);
   text("Temps", ((displayWidth/2)+(displayWidth/2-yOffset))-40*xCal,(displayWidth/2)-20*yCal);
@@ -352,11 +358,11 @@ premier = 1;
   constantNumberboxes[2] = cp5.addNumberbox("phNumberbox", 100, displayHeight / 2 + 2 * yOffset + yOffset / 4, 40, 14);
   constantNumberboxes[3] = cp5.addNumberbox("ecNumberbox", 100, displayHeight / 2 + 3 * yOffset + yOffset / 4, 40, 14);
   constantNumberboxes[4] = cp5.addNumberbox("co2Numberbox", 100, displayHeight / 2 + 4 * yOffset + yOffset / 4, 40, 14);
-  constantNumberboxes[5] = cp5.addNumberbox("  ").setValue(0).setPosition(1025,displayHeight / 2 - 1 * yOffset + yOffset / 4);
-  constantNumberboxes[6] = cp5.addNumberbox("").setValue(0).setPosition(1200, displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  constantNumberboxes[5] = cp5.addNumberbox("  ").setValue(0).setPosition(displayWidth/2+100,displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  constantNumberboxes[6] = cp5.addNumberbox("").setValue(0).setPosition(displayWidth/2+300, displayHeight / 2 - 1 * yOffset + yOffset / 4);
   
-  constantPanelLabels[0] = cp5.addTextlabel("tempMinLabel").setValueLabel(" mini :").setPosition(965,displayHeight / 2 - 1 * yOffset + yOffset / 4);
-  constantPanelLabels[1] = cp5.addTextlabel("tempMaxLabel").setValueLabel(" max :").setPosition(1140,displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  constantPanelLabels[0] = cp5.addTextlabel("tempMinLabel").setValueLabel(" mini :").setPosition(displayWidth/2,displayHeight / 2 - 1 * yOffset + yOffset / 4);
+  constantPanelLabels[1] = cp5.addTextlabel("tempMaxLabel").setValueLabel(" max :").setPosition(displayWidth/2+200,displayHeight / 2 - 1 * yOffset + yOffset / 4);
 
 
 
